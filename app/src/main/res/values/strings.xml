@@ -12,6 +12,10 @@
     <string name="password_hint">Пароль</string>
     <string name="login_button">Войти</string>
     <string name="sign_in_continue">Войдите, чтобы продолжить</string>
+    <string name="register_button">Регистрация</string>
+    <string name="register_waiter">Регистрация официанта</string>
+    <string name="register_admin">Регистрация Администратора</string>
+    <string name="establishment_code_hint">Код заведения</string>
     <string name="invalid_auth">Неверное имя пользователя или пароль</string>
 
     <!-- Admin -->
@@ -22,9 +26,10 @@
     <string name="add_waiter_button">Добавить</string>
     <string name="waiters_list">Список официантов</string>
     <string name="manage_menu">Управление меню</string>
-    <string name="full_menu">Полное меню</string>
+    <string name="full_menu">Меню</string>
     <string name="waiters_tab">Официанты</string>
     <string name="categories_tab">Категории</string>
+    <string name="establishment_settings_tab">Настройки</string>
     <string name="role_waiter">Роль: Официант</string>
     <string name="waiter_added">Официант добавлен</string>
     <string name="fill_all_fields">Пожалуйста, заполните все поля</string>

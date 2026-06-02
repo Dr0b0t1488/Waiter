@@ -13,6 +13,10 @@ public class MenuItem {
     private double price;
     private String imageUrl;
 
+    public MenuItem() {
+        // Required for Firebase
+    }
+
     public MenuItem(int id, int categoryId, String name, String description, double price, String imageUrl) {
         this.id = id;
         this.categoryId = categoryId;

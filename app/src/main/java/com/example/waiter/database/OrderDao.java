@@ -30,6 +30,12 @@ public interface OrderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertOrderItem(OrderItem orderItem);
 
+    @Update
+    void updateOrderItem(OrderItem orderItem);
+
+    @Query("SELECT * FROM order_items WHERE orderId = :orderId AND menuItemId = :menuItemId LIMIT 1")
+    OrderItem getOrderItemSync(int orderId, int menuItemId);
+
     @Query("DELETE FROM order_items WHERE id = :orderItemId")
     void deleteOrderItem(int orderItemId);
 }

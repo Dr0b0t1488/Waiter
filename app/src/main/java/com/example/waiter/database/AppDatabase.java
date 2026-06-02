@@ -13,7 +13,7 @@ import com.example.waiter.models.OrderItem;
 import com.example.waiter.models.Table;
 import com.example.waiter.models.User;
 
-@Database(entities = {Table.class, Category.class, MenuItem.class, Order.class, OrderItem.class, User.class}, version = 2, exportSchema = false)
+@Database(entities = {Table.class, Category.class, MenuItem.class, Order.class, OrderItem.class, User.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance;
 

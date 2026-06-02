@@ -42,10 +42,16 @@ public class LoginFragment extends Fragment {
             authViewModel.login(username, password);
         });
 
+        binding.btnRegister.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_loginFragment_to_registerFragment);
+        });
+
         authViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 if ("ADMIN".equals(user.getRole())) {
                     Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_adminFragment);
+                } else if ("HYPER_ADMIN".equals(user.getRole())) {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_hyperAdminFragment);
                 } else {
                     Navigation.findNavController(requireView()).navigate(R.id.action_loginFragment_to_tablesFragment);
                 }

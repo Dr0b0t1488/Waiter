@@ -10,12 +10,16 @@ public class Order {
     private int tableId;
     private String status; // e.g., "OPEN", "PAID", "CANCELLED"
     private long timestamp;
+    private String establishmentCode;
 
-    public Order(int id, int tableId, String status, long timestamp) {
+    public Order() {}
+
+    public Order(int id, int tableId, String status, long timestamp, String establishmentCode) {
         this.id = id;
         this.tableId = tableId;
         this.status = status;
         this.timestamp = timestamp;
+        this.establishmentCode = establishmentCode;
     }
 
     public int getId() { return id; }
@@ -26,4 +30,6 @@ public class Order {
     public void setStatus(String status) { this.status = status; }
     public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public String getEstablishmentCode() { return establishmentCode; }
+    public void setEstablishmentCode(String establishmentCode) { this.establishmentCode = establishmentCode; }
 }

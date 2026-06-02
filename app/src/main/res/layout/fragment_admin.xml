@@ -13,7 +13,8 @@
         android:background="@color/white"
         app:tabIndicatorColor="@color/colorPrimary"
         app:tabSelectedTextColor="@color/colorPrimary"
-        app:tabTextColor="@color/text_secondary">
+        app:tabTextColor="@color/text_secondary"
+        app:tabTextAppearance="@style/AdminTabTextAppearance">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -29,6 +30,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/full_menu" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/establishment_settings_tab" />
 
     </com.google.android.material.tabs.TabLayout>
 

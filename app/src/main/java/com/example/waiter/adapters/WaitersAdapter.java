@@ -41,13 +41,17 @@ public class WaitersAdapter extends RecyclerView.Adapter<WaitersAdapter.WaiterVi
 
     @Override
     public void onBindViewHolder(@NonNull WaiterViewHolder holder, int position) {
-        User waiter = waiters.get(position);
-        holder.tvUsername.setText(waiter.getUsername());
-        holder.tvRole.setText(holder.itemView.getContext().getString(R.string.role_waiter));
+        User user = waiters.get(position);
+        holder.tvUsername.setText(user.getUsername());
+        
+        String roleText = "WAITER".equals(user.getRole()) ? 
+                holder.itemView.getContext().getString(R.string.role_waiter) : 
+                "Роль: Администратор";
+        holder.tvRole.setText(roleText);
         
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
-                longClickListener.onWaiterLongClick(waiter, v);
+                longClickListener.onWaiterLongClick(user, v);
                 return true;
             }
             return false;

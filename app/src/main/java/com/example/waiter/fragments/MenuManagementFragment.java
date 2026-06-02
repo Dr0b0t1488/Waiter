@@ -19,6 +19,7 @@ import com.example.waiter.databinding.FragmentMenuManagementBinding;
 import com.example.waiter.models.Category;
 import com.example.waiter.models.MenuItem;
 import com.example.waiter.utils.KeyboardUtils;
+import com.example.waiter.viewmodels.AuthViewModel;
 import com.example.waiter.viewmodels.WaiterViewModel;
 
 import java.util.ArrayList;

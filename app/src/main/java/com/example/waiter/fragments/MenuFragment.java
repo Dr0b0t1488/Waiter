@@ -21,6 +21,7 @@ import com.example.waiter.adapters.CategoriesAdapter;
 import com.example.waiter.adapters.MenuItemsAdapter;
 import com.example.waiter.models.Category;
 import com.example.waiter.models.MenuItem;
+import com.example.waiter.viewmodels.AuthViewModel;
 import com.example.waiter.viewmodels.WaiterViewModel;
 
 import java.util.ArrayList;
@@ -84,9 +85,6 @@ public class MenuFragment extends Fragment {
         recyclerItems.setAdapter(itemsAdapter);
 
         viewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
-            if (categories.isEmpty()) {
-                seedMenu();
-            }
             catsAdapter.setCategories(categories);
             if (!categories.isEmpty()) {
                 viewModel.getItemsByCategory(categories.get(0).getId()).observe(getViewLifecycleOwner(), items -> {
@@ -105,17 +103,5 @@ public class MenuFragment extends Fragment {
             }
         }
         itemsAdapter.setItems(filteredList);
-    }
-
-    private void seedMenu() {
-        viewModel.addCategory(new Category(1, "Напитки", ""));
-        viewModel.addCategory(new Category(2, "Пицца", ""));
-        viewModel.addCategory(new Category(3, "Десерты", ""));
-
-        viewModel.addMenuItem(new MenuItem(0, 1, "Кола", "0.5л", 150.00, "https://i.pinimg.com/originals/83/3c/aa/833caadf4ce70819006c30da65e78813.jpg"));
-        viewModel.addMenuItem(new MenuItem(0, 1, "Вода", "0.5л", 100.00, "https://mosnapitki.ru/upload/iblock/a3d/1ay9l5nlsn4h4wnyu732k9b7c232hyr6.jpg"));
-        viewModel.addMenuItem(new MenuItem(0, 2, "Маргарита", "Томаты, Моцарелла, Базилик", 550.00, "https://static.vecteezy.com/system/resources/previews/054/648/928/non_2x/margherita-pizza-top-view-isolated-on-transparent-background-png.png"));
-        viewModel.addMenuItem(new MenuItem(0, 2, "Пепперони", "Салями, Моцарелла, Специи", 650.00, "https://t3.ftcdn.net/jpg/07/15/38/06/360_F_715380620_0cmk5FKzLUPb4t2gtrZBRYpiyS8kqgEY.jpg"));
-        viewModel.addMenuItem(new MenuItem(0, 3, "Чизкейк", "Сливочный сыр, бисквит", 350.00, "https://images.gastronom.ru/MvP5F_VwHhE6-K6mI6N1v96WfM9AclG6-N_eD-I_nIs/pr:recipe-single-zoom/g:ce/rs:auto:0:0/L2Ntcy9hbGxiYWtlcy82MTNhMmEwYy05YmY0LTQyOTAtOTFiMy00M2VlNmVmZTg3M2YuanBn.jpg"));
     }
 }

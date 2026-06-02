@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.waiter.R;
 import com.example.waiter.adapters.TablesAdapter;
 import com.example.waiter.models.Table;
+import com.example.waiter.viewmodels.AuthViewModel;
 import com.example.waiter.viewmodels.WaiterViewModel;
 
 import java.util.ArrayList;
@@ -49,12 +50,6 @@ public class TablesFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         viewModel.getAllTables().observe(getViewLifecycleOwner(), tables -> {
-            if (tables.isEmpty()) {
-                // Seed data if empty
-                for (int i = 1; i <= 10; i++) {
-                    viewModel.addTable(new Table(0, "Стол " + i, 4, false));
-                }
-            }
             adapter.setTables(tables);
         });
     }

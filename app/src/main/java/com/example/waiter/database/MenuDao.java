@@ -14,8 +14,11 @@ import java.util.List;
 
 @Dao
 public interface MenuDao {
-    @Query("SELECT * FROM categories")
-    LiveData<List<Category>> getAllCategories();
+    @Query("SELECT * FROM categories WHERE establishmentCode = :code")
+    LiveData<List<Category>> getAllCategoriesByCode(String code);
+
+    @Query("SELECT * FROM menu_items JOIN categories ON menu_items.categoryId = categories.id WHERE categories.establishmentCode = :code")
+    LiveData<List<MenuItem>> getAllMenuItemsByCode(String code);
 
     @Query("SELECT * FROM menu_items WHERE categoryId = :categoryId")
     LiveData<List<MenuItem>> getItemsByCategory(int categoryId);
@@ -34,6 +37,9 @@ public interface MenuDao {
 
     @Query("SELECT * FROM categories WHERE name = :name LIMIT 1")
     Category getCategoryByName(String name);
+
+    @Query("SELECT * FROM categories WHERE name = :name AND establishmentCode = :code LIMIT 1")
+    Category getCategoryByNameAndCode(String name, String code);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertCategoryAndGetId(Category category);

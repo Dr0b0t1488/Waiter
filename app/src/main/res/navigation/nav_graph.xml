@@ -20,7 +20,27 @@
             app:destination="@id/adminFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_hyperAdminFragment"
+            app:destination="@id/hyperAdminFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/hyperAdminFragment"
+        android:name="com.example.waiter.fragments.HyperAdminFragment"
+        android:label="Гипер Админ"
+        tools:layout="@layout/fragment_hyper_admin" />
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.waiter.fragments.RegisterFragment"
+        android:label="Регистрация"
+        tools:layout="@layout/fragment_register" />
 
     <fragment
         android:id="@+id/adminFragment"

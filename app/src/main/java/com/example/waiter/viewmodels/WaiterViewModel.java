@@ -8,214 +8,340 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
-import com.example.waiter.database.AppDatabase;
 import com.example.waiter.models.Category;
 import com.example.waiter.models.MenuItem;
 import com.example.waiter.models.Order;
 import com.example.waiter.models.OrderItem;
+import com.example.waiter.models.OrderItemWithDetails;
 import com.example.waiter.models.Table;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class WaiterViewModel extends AndroidViewModel {
-    private final AppDatabase db;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final DatabaseReference mDatabase;
+    private final MutableLiveData<String> establishmentCode = new MutableLiveData<>();
+    private final MutableLiveData<Integer> selectedTableId = new MutableLiveData<>();
 
     private final LiveData<List<Table>> allTables;
     private final LiveData<List<Category>> allCategories;
-    
-    private final MutableLiveData<Integer> selectedTableId = new MutableLiveData<>();
-    private final LiveData<Order> currentOrder;
+    private final LiveData<List<MenuItem>> allMenuItems;
 
     public WaiterViewModel(@NonNull Application application) {
         super(application);
-        db = AppDatabase.getInstance(application);
-        allTables = db.tableDao().getAllTables();
-        allCategories = db.menuDao().getAllCategories();
-        
-        currentOrder = Transformations.switchMap(selectedTableId, tableId -> 
-            db.orderDao().getOpenOrderByTable(tableId)
-        );
-        translateExistingCategories();
-    }
+        mDatabase = FirebaseDatabase.getInstance("https://waiter-b309e-default-rtdb.europe-west1.firebasedatabase.app").getReference();
 
-    private void translateExistingCategories() {
-        executor.execute(() -> {
-            // Translate categories
-            translateCategory("Drinks", "Напитки");
-            translateCategory("Pizza", "Пицца");
-            translateCategory("Desserts", "Десерты");
-
-            // Define standard items and their images
-            String colaImg = "https://i.pinimg.com/originals/83/3c/aa/833caadf4ce70819006c30da65e78813.jpg";
-            String waterImg = "https://mosnapitki.ru/upload/iblock/a3d/1ay9l5nlsn4h4wnyu732k9b7c232hyr6.jpg";
-            String margImg = "https://static.vecteezy.com/system/resources/previews/054/648/928/non_2x/margherita-pizza-top-view-isolated-on-transparent-background-png.png";
-            String pepImg = "https://t3.ftcdn.net/jpg/07/15/38/06/360_F_715380620_0cmk5FKzLUPb4t2gtrZBRYpiyS8kqgEY.jpg";
-            String cheeseImg = "https://static.tildacdn.com/tild3037-3331-4138-b633-316538663864/New_York_Cheesecake.jpg";
-
-            // Update images and translate item names if they exist in English
-            updateAndTranslateItem("Cola", "Кола", colaImg);
-            updateAndTranslateItem("Water", "Вода", waterImg);
-            updateAndTranslateItem("Margherita", "Маргарита", margImg);
-            updateAndTranslateItem("Pepperoni", "Пепперони", pepImg);
-            updateAndTranslateItem("Cheesecake", "Чизкейк", cheeseImg);
-
-            // Also check for already translated names to update images
-            updateStandardItemImage("Кола", colaImg);
-            updateStandardItemImage("Вода", waterImg);
-            updateStandardItemImage("Маргарита", margImg);
-            updateStandardItemImage("Пепперони", pepImg);
-            updateStandardItemImage("Чизкейк", cheeseImg);
-
-            // Rename tables from English to Russian
-            List<Table> tables = db.tableDao().getAllTablesNow();
-            if (tables != null) {
-                for (Table t : tables) {
-                    if (t.getName().startsWith("Table ")) {
-                        t.setName(t.getName().replace("Table ", "Стол "));
-                        db.tableDao().updateTable(t);
+        allTables = Transformations.switchMap(establishmentCode, code -> {
+            MutableLiveData<List<Table>> data = new MutableLiveData<>();
+            if (code != null) {
+                mDatabase.child("establishments").child(code).child("tables")
+                        .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Table> list = new ArrayList<>();
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            Table t = s.getValue(Table.class);
+                            if (t != null) list.add(t);
+                        }
+                        data.postValue(list);
                     }
-                }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
             }
+            return data;
+        });
+
+        allCategories = Transformations.switchMap(establishmentCode, code -> {
+            MutableLiveData<List<Category>> data = new MutableLiveData<>();
+            if (code != null) {
+                mDatabase.child("establishments").child(code).child("categories")
+                        .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Category> list = new ArrayList<>();
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            Category c = s.getValue(Category.class);
+                            if (c != null) list.add(c);
+                        }
+                        data.postValue(list);
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            }
+            return data;
+        });
+
+        allMenuItems = Transformations.switchMap(establishmentCode, code -> {
+            MutableLiveData<List<MenuItem>> data = new MutableLiveData<>();
+            if (code != null) {
+                mDatabase.child("establishments").child(code).child("menu_items")
+                        .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<MenuItem> list = new ArrayList<>();
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            MenuItem m = s.getValue(MenuItem.class);
+                            if (m != null) list.add(m);
+                        }
+                        data.postValue(list);
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            }
+            return data;
         });
     }
 
-    private void translateCategory(String oldName, String newName) {
-        Category cat = db.menuDao().getCategoryByName(oldName);
-        if (cat != null) {
-            cat.setName(newName);
-            db.menuDao().updateCategory(cat);
-        }
-    }
-
-    private void updateAndTranslateItem(String oldName, String newName, String imgUrl) {
-        MenuItem item = db.menuDao().getItemByName(oldName);
-        if (item != null) {
-            item.setName(newName);
-            item.setImageUrl(imgUrl);
-            db.menuDao().updateMenuItem(item);
-        }
-    }
-
-    private void updateStandardItemImage(String name, String url) {
-        MenuItem item = db.menuDao().getItemByName(name);
-        if (item != null) {
-            if (item.getImageUrl() == null || item.getImageUrl().isEmpty() || !item.getImageUrl().equals(url)) {
-                item.setImageUrl(url);
-                db.menuDao().updateMenuItem(item);
-            }
+    public void setEstablishmentCode(String code) {
+        if (code != null && !code.equals(establishmentCode.getValue())) {
+            establishmentCode.setValue(code);
         }
     }
 
     public LiveData<List<Table>> getAllTables() { return allTables; }
     public LiveData<List<Category>> getAllCategories() { return allCategories; }
-    
+    public LiveData<List<MenuItem>> getAllMenuItems() { return allMenuItems; }
+
     public void setSelectedTable(int tableId) {
         selectedTableId.setValue(tableId);
     }
-    
-    public LiveData<Integer> getSelectedTableId() { return selectedTableId; }
 
-    public LiveData<Order> getCurrentOrder() { return currentOrder; }
+    public LiveData<Order> getCurrentOrder() {
+        return Transformations.switchMap(selectedTableId, tableId -> {
+            MutableLiveData<Order> order = new MutableLiveData<>();
+            String code = establishmentCode.getValue();
+            if (code != null) {
+                mDatabase.child("establishments").child(code).child("orders")
+                        .orderByChild("tableId").equalTo(tableId)
+                        .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot s : snapshot.getChildren()) {
+                            Order o = s.getValue(Order.class);
+                            if (o != null && "OPEN".equals(o.getStatus())) {
+                                order.postValue(o);
+                                return;
+                            }
+                        }
+                        order.postValue(null);
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            }
+            return order;
+        });
+    }
 
     public LiveData<List<MenuItem>> getItemsByCategory(int categoryId) {
-        return db.menuDao().getItemsByCategory(categoryId);
+        return Transformations.map(allMenuItems, items -> {
+            List<MenuItem> filtered = new ArrayList<>();
+            for (MenuItem m : items) {
+                if (m.getCategoryId() == categoryId) filtered.add(m);
+            }
+            return filtered;
+        });
     }
 
-    public LiveData<List<MenuItem>> getAllMenuItems() {
-        return db.menuDao().getAllMenuItems();
-    }
-
-    public LiveData<List<com.example.waiter.models.OrderItemWithDetails>> getOrderItems(int orderId) {
-        return db.orderDao().getOrderItems(orderId);
-    }
-
-    public void addTable(Table table) {
-        executor.execute(() -> db.tableDao().insertTable(table));
-    }
-
-    public void addCategory(Category category) {
-        executor.execute(() -> db.menuDao().insertCategory(category));
-    }
-
-    public void updateCategory(Category category) {
-        executor.execute(() -> db.menuDao().updateCategory(category));
-    }
-
-    public void deleteCategory(Category category) {
-        executor.execute(() -> db.menuDao().deleteCategory(category));
-    }
-
-    public void addMenuItem(MenuItem item) {
-        executor.execute(() -> db.menuDao().insertMenuItem(item));
+    public void updateTableCount(String code, int count) {
+        mDatabase.child("establishments").child(code).child("tables").removeValue()
+                .addOnCompleteListener(task -> {
+                    for (int i = 1; i <= count; i++) {
+                        Table t = new Table(i, "Стол " + i, 4, false, code);
+                        mDatabase.child("establishments").child(code).child("tables").child(String.valueOf(i)).setValue(t);
+                    }
+                });
     }
 
     public void ensureCategoryAndAddMenuItem(String categoryName, MenuItem item) {
-        executor.execute(() -> {
-            Category cat = db.menuDao().getCategoryByName(categoryName);
-            int catId;
-            if (cat == null) {
-                catId = (int) db.menuDao().insertCategoryAndGetId(new Category(0, categoryName, ""));
-            } else {
-                catId = cat.getId();
+        String code = establishmentCode.getValue();
+        if (code == null) return;
+
+        mDatabase.child("establishments").child(code).child("categories").orderByChild("name").equalTo(categoryName)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    DataSnapshot catSnapshot = snapshot.getChildren().iterator().next();
+                    Category cat = catSnapshot.getValue(Category.class);
+                    if (cat != null) {
+                        saveMenuItem(cat.getId(), item);
+                    }
+                } else {
+                    int newId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+                    Category newCat = new Category(newId, categoryName, "", code);
+                    mDatabase.child("establishments").child(code).child("categories").child(String.valueOf(newId)).setValue(newCat)
+                            .addOnCompleteListener(task -> saveMenuItem(newId, item));
+                }
             }
-            item.setCategoryId(catId);
-            db.menuDao().insertMenuItem(item);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
-    public void createOrder(int tableId) {
-        executor.execute(() -> {
-            Order order = new Order(0, tableId, "OPEN", System.currentTimeMillis());
-            db.orderDao().insertOrder(order);
-            
-            // Mark table as occupied
-            Table table = db.tableDao().getTableById(tableId);
-            if (table != null) {
-                table.setOccupied(true);
-                db.tableDao().updateTable(table);
-            }
-        });
-    }
-
-    public void addItemToOrder(int orderId, MenuItem item) {
-        executor.execute(() -> {
-            OrderItem orderItem = new OrderItem(0, orderId, item.getId(), 1, item.getPrice());
-            db.orderDao().insertOrderItem(orderItem);
-        });
-    }
-
-    public void removeOrderItem(int orderItemId) {
-        executor.execute(() -> db.orderDao().deleteOrderItem(orderItemId));
+    private void saveMenuItem(int catId, MenuItem item) {
+        String code = establishmentCode.getValue();
+        if (item.getId() == 0) {
+            item.setId((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+        }
+        item.setCategoryId(catId);
+        mDatabase.child("establishments").child(code).child("menu_items").child(String.valueOf(item.getId())).setValue(item);
     }
 
     public void deleteMenuItem(MenuItem item) {
-        executor.execute(() -> db.menuDao().deleteMenuItem(item));
+        mDatabase.child("establishments").child(establishmentCode.getValue()).child("menu_items").child(String.valueOf(item.getId())).removeValue();
+    }
+
+    public void addCategory(Category category) {
+        if (category.getId() == 0) category.setId((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+        mDatabase.child("establishments").child(establishmentCode.getValue()).child("categories").child(String.valueOf(category.getId())).setValue(category);
+    }
+
+    public void updateCategory(Category category) {
+        addCategory(category);
+    }
+
+    public void deleteCategory(Category category) {
+        mDatabase.child("establishments").child(establishmentCode.getValue()).child("categories").child(String.valueOf(category.getId())).removeValue();
     }
 
     public void getItemById(int id, OnItemLoadedListener listener) {
-        executor.execute(() -> {
-            MenuItem item = db.menuDao().getItemById(id);
-            listener.onItemLoaded(item);
+        mDatabase.child("establishments").child(establishmentCode.getValue()).child("menu_items").child(String.valueOf(id))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                listener.onItemLoaded(snapshot.getValue(MenuItem.class));
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 
     public interface OnItemLoadedListener {
         void onItemLoaded(MenuItem item);
     }
+
+    public void createOrder(int tableId) {
+        String code = establishmentCode.getValue();
+        int orderId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        Order order = new Order(orderId, tableId, "OPEN", System.currentTimeMillis(), code);
+        mDatabase.child("establishments").child(code).child("orders").child(String.valueOf(orderId)).setValue(order);
+        mDatabase.child("establishments").child(code).child("tables").child(String.valueOf(tableId)).child("occupied").setValue(true);
+    }
+
+    public void addItemToOrder(int orderId, MenuItem item) {
+        String code = establishmentCode.getValue();
+        DatabaseReference orderItemsRef = mDatabase.child("establishments").child(code).child("orders").child(String.valueOf(orderId)).child("items");
+        
+        orderItemsRef.child(String.valueOf(item.getId())).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    OrderItem existing = snapshot.getValue(OrderItem.class);
+                    if (existing != null) {
+                        existing.setQuantity(existing.getQuantity() + 1);
+                        orderItemsRef.child(String.valueOf(item.getId())).setValue(existing);
+                    }
+                } else {
+                    OrderItem newItem = new OrderItem(item.getId(), orderId, item.getId(), 1, item.getPrice());
+                    orderItemsRef.child(String.valueOf(item.getId())).setValue(newItem);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    public LiveData<List<OrderItemWithDetails>> getOrderItems(int orderId) {
+        MutableLiveData<List<OrderItemWithDetails>> items = new MutableLiveData<>();
+        String code = establishmentCode.getValue();
+        
+        mDatabase.child("establishments").child(code).child("orders").child(String.valueOf(orderId)).child("items")
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<OrderItemWithDetails> list = new ArrayList<>();
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    OrderItem oi = s.getValue(OrderItem.class);
+                    if (oi != null) {
+                        fetchMenuItem(oi, list, snapshot.getChildrenCount(), items);
+                    }
+                }
+                if (snapshot.getChildrenCount() == 0) items.postValue(list);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+        return items;
+    }
+
+    private void fetchMenuItem(OrderItem oi, List<OrderItemWithDetails> list, long total, MutableLiveData<List<OrderItemWithDetails>> liveData) {
+        mDatabase.child("establishments").child(establishmentCode.getValue()).child("menu_items").child(String.valueOf(oi.getMenuItemId()))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                MenuItem mi = snapshot.getValue(MenuItem.class);
+                OrderItemWithDetails details = new OrderItemWithDetails();
+                details.orderItem = oi;
+                details.menuItem = mi;
+                list.add(details);
+                if (list.size() == total) liveData.postValue(list);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+    }
+
+    public void removeOrderItem(int orderItemId) {
+        // Logic to remove item from current order
+    }
     
     public void closeOrder(Order order) {
-        executor.execute(() -> {
-            order.setStatus("PAID");
-            db.orderDao().updateOrder(order);
-            
-            Table table = db.tableDao().getTableById(order.getTableId());
-            if (table != null) {
-                table.setOccupied(false);
-                db.tableDao().updateTable(table);
+        String code = establishmentCode.getValue();
+        order.setStatus("PAID");
+        mDatabase.child("establishments").child(code).child("orders").child(String.valueOf(order.getId())).setValue(order);
+        mDatabase.child("establishments").child(code).child("tables").child(String.valueOf(order.getTableId())).child("occupied").setValue(false);
+    }
+
+    // Hyper Admin methods
+    public LiveData<List<String>> getAllEstablishments() {
+        MutableLiveData<List<String>> list = new MutableLiveData<>();
+        mDatabase.child("establishments").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<String> codes = new ArrayList<>();
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    codes.add(s.getKey());
+                }
+                list.postValue(codes);
             }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+        return list;
+    }
+
+    public void deleteEstablishment(String code) {
+        mDatabase.child("establishments").child(code).removeValue();
+        // Also delete users associated with this code
+        mDatabase.child("users").orderByChild("establishmentCode").equalTo(code)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot s : snapshot.getChildren()) {
+                    s.getRef().removeValue();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
 }

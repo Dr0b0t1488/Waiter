@@ -21,6 +21,7 @@ import com.example.waiter.adapters.MenuItemsAdapter;
 import com.example.waiter.adapters.WaitersAdapter;
 import com.example.waiter.databinding.FragmentAdminBinding;
 import com.example.waiter.databinding.FragmentAdminCategoriesBinding;
+import com.example.waiter.databinding.FragmentAdminEstablishmentSettingsBinding;
 import com.example.waiter.databinding.FragmentAdminMenuBinding;
 import com.example.waiter.databinding.FragmentAdminWaitersBinding;
 import com.example.waiter.models.Category;
@@ -37,7 +38,6 @@ public class AdminFragment extends Fragment {
     private FragmentAdminBinding binding;
     private AuthViewModel authViewModel;
     private WaiterViewModel waiterViewModel;
-    private User editingWaiter = null;
     private Category editingCategory = null;
 
     @Nullable
@@ -66,6 +66,7 @@ public class AdminFragment extends Fragment {
                     case 0: showWaitersTab(); break;
                     case 1: showCategoriesTab(); break;
                     case 2: showMenuTab(); break;
+                    case 3: showEstablishmentSettingsTab(); break;
                 }
             }
             @Override
@@ -81,58 +82,78 @@ public class AdminFragment extends Fragment {
         
         waitersBinding.getRoot().setOnClickListener(v -> KeyboardUtils.hideKeyboard(requireActivity()));
 
-        WaitersAdapter adapter = new WaitersAdapter(new ArrayList<>(), (waiter, view) -> {
-            showWaiterPopup(waiter, view, waitersBinding);
+        // Admins List
+        WaitersAdapter adminAdapter = new WaitersAdapter(new ArrayList<>(), (admin, view) -> {
+            showUserEditDialog(admin);
+        });
+        waitersBinding.rvAdmins.setLayoutManager(new LinearLayoutManager(getContext()));
+        waitersBinding.rvAdmins.setAdapter(adminAdapter);
+        authViewModel.getAdmins().observe(getViewLifecycleOwner(), adminAdapter::setWaiters);
+
+        // Waiters List
+        WaitersAdapter waiterAdapter = new WaitersAdapter(new ArrayList<>(), (waiter, view) -> {
+            showUserEditDialog(waiter);
         });
         waitersBinding.rvWaiters.setLayoutManager(new LinearLayoutManager(getContext()));
-        waitersBinding.rvWaiters.setAdapter(adapter);
-
-        authViewModel.getWaiters().observe(getViewLifecycleOwner(), adapter::setWaiters);
-
-        waitersBinding.btnAddWaiter.setOnClickListener(v -> {
-            String username = waitersBinding.etNewWaiterUsername.getText().toString();
-            String password = waitersBinding.etNewWaiterPassword.getText().toString();
-            if (!username.isEmpty() && !password.isEmpty()) {
-                if (editingWaiter != null) {
-                    editingWaiter.setUsername(username);
-                    editingWaiter.setPassword(password);
-                    authViewModel.updateWaiter(editingWaiter);
-                    editingWaiter = null;
-                    waitersBinding.btnAddWaiter.setText(R.string.add_waiter_button);
-                    Toast.makeText(getContext(), R.string.waiter_updated, Toast.LENGTH_SHORT).show();
-                } else {
-                    authViewModel.addWaiter(username, password);
-                    Toast.makeText(getContext(), R.string.waiter_added, Toast.LENGTH_SHORT).show();
-                }
-                waitersBinding.etNewWaiterUsername.setText("");
-                waitersBinding.etNewWaiterPassword.setText("");
-            } else {
-                Toast.makeText(getContext(), R.string.fill_all_fields, Toast.LENGTH_SHORT).show();
-            }
-        });
+        waitersBinding.rvWaiters.setAdapter(waiterAdapter);
+        authViewModel.getWaiters().observe(getViewLifecycleOwner(), waiterAdapter::setWaiters);
     }
 
-    private void showWaiterPopup(User waiter, View view, FragmentAdminWaitersBinding waitersBinding) {
-        PopupMenu popup = new PopupMenu(getContext(), view);
-        popup.getMenu().add(getString(R.string.edit));
-        popup.getMenu().add(getString(R.string.delete));
+    private void showUserEditDialog(User user) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
+        View view = getLayoutInflater().inflate(R.layout.dialog_edit_user, null);
+        
+        com.google.android.material.textfield.TextInputEditText etUser = view.findViewById(R.id.et_username);
+        com.google.android.material.textfield.TextInputEditText etPass = view.findViewById(R.id.et_password);
+        com.google.android.material.textfield.TextInputEditText etCode = view.findViewById(R.id.et_code);
+        com.google.android.material.textfield.TextInputLayout tilCode = view.findViewById(R.id.til_code);
 
-        popup.setOnMenuItemClickListener(menuItem -> {
-            CharSequence title = menuItem.getTitle();
-            if (title == null) return false;
-            
-            if (getString(R.string.delete).contentEquals(title)) {
-                authViewModel.deleteWaiter(waiter);
-                Toast.makeText(getContext(), R.string.waiter_deleted, Toast.LENGTH_SHORT).show();
-            } else if (getString(R.string.edit).contentEquals(title)) {
-                editingWaiter = waiter;
-                waitersBinding.etNewWaiterUsername.setText(waiter.getUsername());
-                waitersBinding.etNewWaiterPassword.setText(waiter.getPassword());
-                waitersBinding.btnAddWaiter.setText(R.string.save_waiter);
-            }
-            return true;
-        });
-        popup.show();
+        etUser.setText(user.getUsername());
+        etPass.setText(user.getPassword());
+        
+        if ("ADMIN".equals(user.getRole())) {
+            tilCode.setVisibility(View.VISIBLE);
+            etCode.setText(user.getEstablishmentCode());
+        } else {
+            tilCode.setVisibility(View.GONE);
+        }
+
+        builder.setView(view)
+                .setTitle("Изменить профиль")
+                .setPositiveButton("Сохранить", (dialog, which) -> {
+                    String username = etUser.getText().toString();
+                    String password = etPass.getText().toString();
+                    if (!username.isEmpty() && !password.isEmpty()) {
+                        user.setUsername(username);
+                        user.setPassword(password);
+                        if ("ADMIN".equals(user.getRole())) {
+                            user.setEstablishmentCode(etCode.getText().toString());
+                            authViewModel.updateCurrentUser(user);
+                        } else {
+                            authViewModel.updateWaiter(user);
+                        }
+                        Toast.makeText(getContext(), R.string.waiter_updated, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Удалить", (dialog, which) -> {
+                    if (!"ADMIN".equals(user.getRole())) {
+                        authViewModel.deleteWaiter(user);
+                        Toast.makeText(getContext(), R.string.waiter_deleted, Toast.LENGTH_SHORT).show();
+                    } else {
+                        authViewModel.getAdminCount(user.getEstablishmentCode(), count -> {
+                            requireActivity().runOnUiThread(() -> {
+                                if (count > 1) {
+                                    authViewModel.deleteWaiter(user);
+                                    Toast.makeText(getContext(), R.string.waiter_deleted, Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Нельзя удалить последнего администратора", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        });
+                    }
+                })
+                .setNeutralButton("Отмена", null)
+                .show();
     }
 
     private void showCategoriesTab() {
@@ -159,10 +180,13 @@ public class AdminFragment extends Fragment {
                     catBinding.btnAddCategory.setText(R.string.add_waiter_button);
                     Toast.makeText(getContext(), R.string.category_updated, Toast.LENGTH_SHORT).show();
                 } else {
-                    waiterViewModel.addCategory(new Category(0, name, ""));
+                    User current = authViewModel.getCurrentUser().getValue();
+                    String code = current != null ? current.getEstablishmentCode() : "";
+                    waiterViewModel.addCategory(new Category(0, name, "", code));
                     Toast.makeText(getContext(), R.string.category_added, Toast.LENGTH_SHORT).show();
                 }
                 catBinding.etCategoryName.setText("");
+                KeyboardUtils.hideKeyboard(requireActivity());
             }
         });
     }
@@ -232,6 +256,28 @@ public class AdminFragment extends Fragment {
             return true;
         });
         popup.show();
+    }
+
+    private void showEstablishmentSettingsTab() {
+        binding.adminContainer.removeAllViews();
+        FragmentAdminEstablishmentSettingsBinding setBinding = FragmentAdminEstablishmentSettingsBinding.inflate(getLayoutInflater(), binding.adminContainer, true);
+
+        User currentUser = authViewModel.getCurrentUser().getValue();
+        if (currentUser == null) return;
+
+        setBinding.btnUpdateTables.setOnClickListener(v -> {
+            String countStr = setBinding.etTableCount.getText().toString();
+            if (!countStr.isEmpty()) {
+                int count = Integer.parseInt(countStr);
+                if (count >= 1 && count <= 100) {
+                    waiterViewModel.updateTableCount(currentUser.getEstablishmentCode(), count);
+                    Toast.makeText(getContext(), "Количество столов обновлено: " + count, Toast.LENGTH_SHORT).show();
+                    KeyboardUtils.hideKeyboard(requireActivity());
+                } else {
+                    Toast.makeText(getContext(), "Введите число от 1 до 100", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override

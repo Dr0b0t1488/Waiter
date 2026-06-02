@@ -10,11 +10,17 @@ public class User {
     private String username;
     private String password;
     private String role; // "ADMIN" or "WAITER"
+    private String establishmentCode;
 
-    public User(String username, String password, String role) {
+    public User() {
+        // Required for Firebase
+    }
+
+    public User(String username, String password, String role, String establishmentCode) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.establishmentCode = establishmentCode;
     }
 
     public int getId() {
@@ -47,5 +53,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getEstablishmentCode() {
+        return establishmentCode;
+    }
+
+    public void setEstablishmentCode(String establishmentCode) {
+        this.establishmentCode = establishmentCode;
     }
 }

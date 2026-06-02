@@ -12,6 +12,8 @@ public class OrderItem {
     private int quantity;
     private double priceAtOrder; // Store price in case it changes in menu
 
+    public OrderItem() {}
+
     public OrderItem(int id, int orderId, int menuItemId, int quantity, double priceAtOrder) {
         this.id = id;
         this.orderId = orderId;

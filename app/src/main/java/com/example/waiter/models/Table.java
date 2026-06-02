@@ -10,12 +10,18 @@ public class Table {
     private String name;
     private int seats;
     private boolean occupied;
+    private String establishmentCode;
 
-    public Table(int id, String name, int seats, boolean occupied) {
+    public Table() {
+        // Required for Firebase
+    }
+
+    public Table(int id, String name, int seats, boolean occupied, String establishmentCode) {
         this.id = id;
         this.name = name;
         this.seats = seats;
         this.occupied = occupied;
+        this.establishmentCode = establishmentCode;
     }
 
     public int getId() { return id; }
@@ -26,4 +32,6 @@ public class Table {
     public void setSeats(int seats) { this.seats = seats; }
     public boolean isOccupied() { return occupied; }
     public void setOccupied(boolean occupied) { this.occupied = occupied; }
+    public String getEstablishmentCode() { return establishmentCode; }
+    public void setEstablishmentCode(String establishmentCode) { this.establishmentCode = establishmentCode; }
 }

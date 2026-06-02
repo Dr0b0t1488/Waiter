@@ -15,6 +15,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.waiter.R;
 import com.example.waiter.viewmodels.AuthViewModel;
+import com.example.waiter.viewmodels.WaiterViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,17 +29,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        WaiterViewModel waiterViewModel = new ViewModelProvider(this).get(WaiterViewModel.class);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.loginFragment, R.id.tablesFragment, R.id.adminFragment)
+                R.id.loginFragment, R.id.tablesFragment, R.id.adminFragment, R.id.hyperAdminFragment)
                 .build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
         authViewModel.getCurrentUser().observe(this, user -> {
+            if (user != null) {
+                waiterViewModel.setEstablishmentCode(user.getEstablishmentCode());
+            }
             invalidateOptionsMenu();
         });
     }
