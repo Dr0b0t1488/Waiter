@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">Waiter</string>
+    <string name="table_name_format">Стол %1$d</string>
+    <string name="order_summary">Информация о заказе</string>
+    <string name="total_format">Итого: %.0f ₽</string>
+    <string name="add_items">Добавить блюда</string>
+    <string name="pay_close">Оплатить / Закрыть стол</string>
+
+    <!-- Auth -->
+    <string name="login_title">Приложение Официант</string>
+    <string name="login_hint">Имя пользователя</string>
+    <string name="password_hint">Пароль</string>
+    <string name="login_button">Войти</string>
+    <string name="sign_in_continue">Войдите, чтобы продолжить</string>
+    <string name="invalid_auth">Неверное имя пользователя или пароль</string>
+
+    <!-- Admin -->
+    <string name="admin_panel">Панель администратора</string>
+    <string name="add_new_waiter">Добавить официанта</string>
+    <string name="waiter_login_hint">Логин официанта</string>
+    <string name="waiter_password_hint">Пароль официанта</string>
+    <string name="add_waiter_button">Добавить</string>
+    <string name="waiters_list">Список официантов</string>
+    <string name="manage_menu">Управление меню</string>
+    <string name="full_menu">Полное меню</string>
+    <string name="waiters_tab">Официанты</string>
+    <string name="categories_tab">Категории</string>
+    <string name="role_waiter">Роль: Официант</string>
+    <string name="waiter_added">Официант добавлен</string>
+    <string name="fill_all_fields">Пожалуйста, заполните все поля</string>
+    <string name="edit">Изменить</string>
+    <string name="delete">Удалить</string>
+    <string name="save_waiter">Сохранить</string>
+    <string name="waiter_updated">Данные официанта обновлены</string>
+    <string name="waiter_deleted">Официант удален</string>
+    <string name="add_category">Добавить категорию</string>
+    <string name="category_name_hint">Название категории</string>
+    <string name="category_added">Категория добавлена</string>
+    <string name="category_updated">Категория обновлена</string>
+    <string name="category_deleted">Категория удалена</string>
+    <string name="confirm_delete">Вы уверены?</string>
+
+    <!-- Menu Management -->
+    <string name="menu_management_title">Управление меню</string>
+    <string name="item_name_hint">Название блюда</string>
+    <string name="item_desc_hint">Состав / Описание</string>
+    <string name="item_price_hint">Цена (в рублях)</string>
+    <string name="item_image_hint">Ссылка на фото (URL)</string>
+    <string name="item_category_hint">Категория блюда</string>
+    <string name="add_to_menu_button">Добавить в меню</string>
+    <string name="current_menu">Текущее меню</string>
+    <string name="save_changes">Сохранить изменения</string>
+    <string name="item_added">Блюдо добавлено в меню</string>
+    <string name="fill_name_price">Пожалуйста, заполните название и цену</string>
+    <string name="composition">Состав</string>
+    <string name="price_format">0 ₽</string>
+
+    <!-- Orders -->
+    <string name="order_details">Детали заказа</string>
+    <string name="complete_order">Завершить заказ</string>
+    <string name="logout">Выйти</string>
+    <string name="item_removed">Блюдо удалено</string>
+    <string name="opening_order">Открытие нового заказа…</string>
+    <string name="order_closed">Заказ закрыт</string>
+
+    <!-- Tables -->
+    <string name="tables_title">Столы</string>
+    <string name="table_free">Свободен</string>
+    <string name="table_occupied">Занят</string>
+    <string name="search_hint">Поиск блюд…</string>
+</resources>

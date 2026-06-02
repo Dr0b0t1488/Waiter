@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.waiter.fragments.LoginFragment"
+        android:label="@string/login_button"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_tablesFragment"
+            app:destination="@id/tablesFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_adminFragment"
+            app:destination="@id/adminFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminFragment"
+        android:name="com.example.waiter.fragments.AdminFragment"
+        android:label="@string/admin_panel"
+        tools:layout="@layout/fragment_admin">
+        <action
+            android:id="@+id/action_adminFragment_to_menuManagementFragment"
+            app:destination="@id/menuManagementFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/menuManagementFragment"
+        android:name="com.example.waiter.fragments.MenuManagementFragment"
+        android:label="@string/menu_management_title"
+        tools:layout="@layout/fragment_menu_management" />
+
+    <fragment
+        android:id="@+id/tablesFragment"
+        android:name="com.example.waiter.fragments.TablesFragment"
+        android:label="@string/tables_title"
+        tools:layout="@layout/fragment_tables">
+        <action
+            android:id="@+id/action_tablesFragment_to_orderFragment"
+            app:destination="@id/orderFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/orderFragment"
+        android:name="com.example.waiter.fragments.OrderFragment"
+        android:label="@string/order_details"
+        tools:layout="@layout/fragment_order">
+        <action
+            android:id="@+id/action_orderFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+        <argument
+            android:name="tableId"
+            app:argType="integer" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/menuFragment"
+        android:name="com.example.waiter.fragments.MenuFragment"
+        android:label="@string/current_menu"
+        tools:layout="@layout/fragment_menu">
+        <argument
+            android:name="orderId"
+            app:argType="integer" />
+    </fragment>
+
+</navigation>
